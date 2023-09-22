@@ -1,0 +1,16 @@
+{
+  "app_title": "plumbus",
+  "invalid_user": "Usuário inválido",
+  "invalid_password": "Senha inválida",
+  "invalid_company": "Empresa inválida",
+  "inactive_user": "Usuário inativo",
+  "invalid_user_or_password": "Usuário ou senha inválidos",
+  "logout_error": "Erro ao sair",
+  "unauthorized_user": "Usuário não autorizado",
+  "connection_error": "Erro de conexão",
+  "cache_error": "Erro de cache",
+  "login": "Entrar",
+  "logout": "Sair",
+  "try_again": "Tente novamente",
+  "home_title": "Início"
+}
