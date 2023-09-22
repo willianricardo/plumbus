@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:plumbus/app/domain/entities/produto_entity.dart';
-import 'package:plumbus/app/domain/entities/search_params.dart';
-import 'package:plumbus/app/domain/repositories/produto_repository_interface.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:plumbus/app/presentation/block/produto_bloc.dart';
 import 'package:plumbus/app/presentation/components/produto_item.dart';
-import 'package:plumbus/core/dependency_injection/dependency_injector.dart';
+import 'package:plumbus/core/translations/app_translations.dart';
 
 class ProdutoPage extends StatefulWidget {
   const ProdutoPage({Key? key}) : super(key: key);
@@ -13,26 +12,50 @@ class ProdutoPage extends StatefulWidget {
 }
 
 class _ProdutoPageState extends State<ProdutoPage> {
-  List<ProdutoEntity> _produtos = [];
-
   _onSearch() async {
-    IProdutoRepository repository =
-        DependencyInjector.get<IProdutoRepository>();
+    context.read<ProdutoBloc>().onSearch();
+  }
 
-    final params = SearchParams(
-      where: ' 1 = 1 ',
-      order: ' a.prodescricao ',
-      first: 5000,
-      skip: 0,
+  Future<void> _tryAgain() async {
+    context.read<ProdutoBloc>().onSearch();
+  }
+
+  _buildInitialState() {
+    return Container();
+  }
+
+  _buildLoadingState() {
+    return const Center(
+      child: CircularProgressIndicator(),
     );
+  }
 
-    final result = await repository.buscar(params);
+  _buildFailureState(message) {
+    return Center(
+      child: Column(
+        children: [
+          Text(message),
+          TextButton(
+            onPressed: () {
+              _tryAgain();
+            },
+            child: Text(
+              AppTranslations.translate('try_again'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (result.isSuccess()) {
-      setState(() {
-        _produtos = result.tryGetSuccess()!;
-      });
-    }
+  _buildSuccessState(produtos) {
+    return ListView.builder(
+      itemCount: produtos.length,
+      itemBuilder: (context, index) {
+        debugPrint(produtos.length.toString());
+        return ProdutoItem(produto: produtos[index]);
+      },
+    );
   }
 
   @override
@@ -48,11 +71,16 @@ class _ProdutoPageState extends State<ProdutoPage> {
         ],
       ),
       body: Center(
-        child: ListView.builder(
-          itemCount: _produtos.length,
-          itemBuilder: (context, index) {
-            debugPrint(_produtos.length.toString());
-            return ProdutoItem(produto: _produtos[index]);
+        child: BlocBuilder<ProdutoBloc, ProdutoState>(
+          builder: (context, state) {
+            return switch (state) {
+              InitialState() => _buildInitialState(),
+              LoadingState() => _buildLoadingState(),
+              SuccessState(produtos: final produtos) =>
+                _buildSuccessState(produtos),
+              FailureState(error: final error) =>
+                _buildFailureState(error.message),
+            };
           },
         ),
       ),
