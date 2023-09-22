@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
-import 'package:plumbus/app/data/repositories/api/auth_repository.dart';
-import 'package:plumbus/app/data/repositories/api/produto_repository.dart';
+import 'package:plumbus/app/data/repositories/memory/auth_repository.dart';
+import 'package:plumbus/app/data/repositories/memory/produto_repository.dart';
 import 'package:plumbus/app/data/repositories/memory/session_repository.dart';
 import 'package:plumbus/app/domain/repositories/auth_repository_interface.dart';
 import 'package:plumbus/app/domain/repositories/produto_repository_interface.dart';
@@ -32,12 +32,12 @@ abstract class DependencyInjector {
 
     /// Auth
     getIt.registerLazySingleton<IAuthRepository>(
-      () => AuthRepository(getIt<IClientAdapter>()),
+      () => AuthRepository(),
     );
 
     /// Produtos
     getIt.registerLazySingleton<IProdutoRepository>(
-      () => ProdutoRepository(getIt<IClientAdapter>()),
+      () => ProdutoRepository(),
     );
   }
 
