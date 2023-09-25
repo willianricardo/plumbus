@@ -8,7 +8,6 @@ class AuthBloc extends Cubit<AuthState> {
 
   void onStart() async {
     final repository = DependencyInjector.get<ISessionRepository>();
-
     var result = await repository.getLoggedUser();
 
     result.when((r) {
@@ -21,10 +20,14 @@ class AuthBloc extends Cubit<AuthState> {
   void onLoggedIn({
     required UsuarioEntity usuario,
   }) async {
+    final loggedUserRepository = DependencyInjector.get<ISessionRepository>();
+    await loggedUserRepository.setLoggedUser(usuario);
     emit(AuthenticatedState(usuario));
   }
 
   void onLoggedOut() async {
+    final repository = DependencyInjector.get<ISessionRepository>();
+    await repository.removeLoggedUser();
     emit(const UnauthenticatedState());
   }
 }

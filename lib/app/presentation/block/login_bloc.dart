@@ -4,7 +4,6 @@ import 'package:plumbus/app/domain/entities/login_credential_entity.dart';
 import 'package:plumbus/app/domain/entities/usuario_entity.dart';
 import 'package:plumbus/app/domain/errors/auth_error.dart';
 import 'package:plumbus/app/domain/repositories/auth_repository_interface.dart';
-import 'package:plumbus/app/domain/repositories/session_repository_interface.dart';
 import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/core/dependency_injection/dependency_injector.dart';
 import 'package:plumbus/core/translations/app_translations.dart';
@@ -54,11 +53,6 @@ class LoginBloc extends Cubit<LoginState> {
           AppTranslations.translate('inactive_user'),
         ),
       ));
-    }
-
-    if (result.isSuccess()) {
-      final loggedUserRepository = DependencyInjector.get<ISessionRepository>();
-      await loggedUserRepository.setLoggedUser(result.tryGetSuccess()!);
     }
 
     result.when((r) {
