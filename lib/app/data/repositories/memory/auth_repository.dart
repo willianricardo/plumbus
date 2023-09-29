@@ -10,6 +10,8 @@ class AuthRepository implements IAuthRepository {
     LoginCredentialEntity credential,
   ) async {
     try {
+      await Future.delayed(const Duration(seconds: 1));
+
       const usuario = UsuarioEntity(
         id: '1',
         ativo: true,

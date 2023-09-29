@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/app/presentation/block/produto_bloc.dart';
-import 'package:plumbus/app/presentation/components/produto_item.dart';
-import 'package:plumbus/core/translations/app_translations.dart';
+import 'package:plumbus/app/presentation/components/produto_loaded_widget.dart';
+import 'package:plumbus/core/components/initial_widget.dart';
+import 'package:plumbus/core/components/loading_widget.dart';
+import 'package:plumbus/core/components/try_again_widget.dart';
 
 class ProdutoPage extends StatefulWidget {
   const ProdutoPage({Key? key}) : super(key: key);
@@ -38,46 +40,15 @@ class _ProdutoViewState extends State<ProdutoView> {
     context.read<ProdutoBloc>().onSearch();
   }
 
-  Future<void> _tryAgain() async {
+  _onTryAgain() {
     context.read<ProdutoBloc>().onSearch();
   }
 
-  _buildInitialState() {
-    return Container();
-  }
+  @override
+  void initState() {
+    super.initState();
 
-  _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  _buildFailureState(message) {
-    return Center(
-      child: Column(
-        children: [
-          Text(message),
-          TextButton(
-            onPressed: () {
-              _tryAgain();
-            },
-            child: Text(
-              AppTranslations.translate('try_again'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  _buildSuccessState(produtos) {
-    return ListView.builder(
-      itemCount: produtos.length,
-      itemBuilder: (context, index) {
-        debugPrint(produtos.length.toString());
-        return ProdutoItem(produto: produtos[index]);
-      },
-    );
+    context.read<ProdutoBloc>().onSearch();
   }
 
   @override
@@ -100,12 +71,15 @@ class _ProdutoViewState extends State<ProdutoView> {
         child: BlocBuilder<ProdutoBloc, ProdutoState>(
           builder: (context, state) {
             return switch (state) {
-              InitialState() => _buildInitialState(),
-              LoadingState() => _buildLoadingState(),
-              SuccessState(produtos: final produtos) =>
-                _buildSuccessState(produtos),
-              FailureState(error: final error) =>
-                _buildFailureState(error.message),
+              InitialState() => const InitialWidget(),
+              LoadingState() => const LoadingWidget(),
+              SuccessState(produtos: final produtos) => ProdutoLoadedWidget(
+                  produtos: produtos,
+                ),
+              FailureState(error: final error) => TryAgainWidget(
+                  message: error.message,
+                  onTryAgain: _onTryAgain,
+                ),
             };
           },
         ),

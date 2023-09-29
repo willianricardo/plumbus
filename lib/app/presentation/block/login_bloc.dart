@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:plumbus/app/domain/entities/login_credential_entity.dart';
 import 'package:plumbus/app/domain/entities/usuario_entity.dart';
 import 'package:plumbus/app/domain/errors/auth_error.dart';
 import 'package:plumbus/app/domain/repositories/auth_repository_interface.dart';
-import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/core/dependency_injection/dependency_injector.dart';
 import 'package:plumbus/core/translations/app_translations.dart';
 
@@ -12,7 +10,6 @@ class LoginBloc extends Cubit<LoginState> {
   LoginBloc() : super(const InitialState());
 
   void onLoginPressed({
-    required BuildContext context,
     required String user,
     required String password,
     required int company,
@@ -57,7 +54,6 @@ class LoginBloc extends Cubit<LoginState> {
 
     result.when((r) {
       emit(SuccessState(r));
-      context.read<AuthBloc>().onLoggedIn(usuario: r);
     }, (l) {
       emit(FailureState(l));
     });
