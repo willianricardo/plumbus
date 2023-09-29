@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:plumbus/app/domain/entities/usuario_entity.dart';
-import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/app/presentation/block/login_bloc.dart';
+import 'package:plumbus/app/presentation/components/login_form_widget.dart';
+import 'package:plumbus/app/presentation/components/login_success_widget.dart';
+import 'package:plumbus/core/components/loading_widget.dart';
+import 'package:plumbus/core/components/try_again_widget.dart';
 import 'package:plumbus/core/theme/app_colors.dart';
 import 'package:plumbus/core/theme/app_images.dart';
-import 'package:plumbus/core/translations/app_translations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -33,101 +34,11 @@ class LoginView extends StatefulWidget {
   State<LoginView> createState() => _LoginViewState();
 }
 
-class InitialStateWidget extends StatelessWidget {
-  const InitialStateWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 250,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              textStyle: const TextStyle(
-                color: AppColors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              backgroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              elevation: 1,
-            ),
-            onPressed: () {
-              context.read<LoginBloc>().onLoginPressed(
-                    user: 'MM',
-                    password: 'MM',
-                    company: 1,
-                  );
-            },
-            child: Text(
-              AppTranslations.translate('login'),
-              style: const TextStyle(
-                color: AppColors.black,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class LoadingStateWidget extends StatelessWidget {
-  const LoadingStateWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-}
-
-class SuccessStateWidget extends StatelessWidget {
-  final UsuarioEntity usuario;
-
-  const SuccessStateWidget({super.key, required this.usuario});
-
-  @override
-  Widget build(BuildContext context) {
-    context.read<AuthBloc>().onLoggedIn(usuario: usuario);
-    return const SizedBox.shrink();
-  }
-}
-
-class FailureStateWidget extends StatelessWidget {
-  final String message;
-
-  const FailureStateWidget({
-    super.key,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Text(message),
-          TextButton(
-            onPressed: () {
-              context.read<LoginBloc>().onLoginReset();
-            },
-            child: Text(
-              AppTranslations.translate('try_again'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _LoginViewState extends State<LoginView> {
+  _onTryAgain() {
+    context.read<LoginBloc>().onLoginReset();
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -166,12 +77,16 @@ class _LoginViewState extends State<LoginView> {
                     child: BlocBuilder<LoginBloc, LoginState>(
                       builder: (context, state) {
                         return switch (state) {
-                          InitialState() => const InitialStateWidget(),
-                          LoadingState() => const LoadingStateWidget(),
+                          InitialState() => const LoginFormWidget(),
+                          LoadingState() => const LoadingWidget(),
                           SuccessState(usuario: final usuario) =>
-                            SuccessStateWidget(usuario: usuario),
-                          FailureState(error: final error) =>
-                            FailureStateWidget(message: error.message),
+                            LoginSuccessWidget(
+                              usuario: usuario,
+                            ),
+                          FailureState(error: final error) => TryAgainWidget(
+                              message: error.message,
+                              onTryAgain: _onTryAgain,
+                            ),
                         };
                       },
                     ),
