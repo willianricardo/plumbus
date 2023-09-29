@@ -13,6 +13,8 @@ class ProdutoRepository implements IProdutoRepository {
     SearchParams params,
   ) async {
     try {
+      await Future.delayed(const Duration(seconds: 1));
+
       produtos = [
         const ProdutoEntity(
           id: '1',
