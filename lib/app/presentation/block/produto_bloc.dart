@@ -22,10 +22,10 @@ class ProdutoBloc extends Cubit<ProdutoState> {
 
     var result = await repository.buscar(params);
 
-    result.when((r) {
-      emit(SuccessState(r));
-    }, (l) {
-      emit(FailureState(l));
+    result.when((produtos) {
+      emit(SuccessState(produtos));
+    }, (error) {
+      emit(FailureState(error));
     });
   }
 }

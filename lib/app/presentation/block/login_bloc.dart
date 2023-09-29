@@ -52,10 +52,10 @@ class LoginBloc extends Cubit<LoginState> {
       ));
     }
 
-    result.when((r) {
-      emit(SuccessState(r));
-    }, (l) {
-      emit(FailureState(l));
+    result.when((usuario) {
+      emit(SuccessState(usuario));
+    }, (error) {
+      emit(FailureState(error));
     });
   }
 

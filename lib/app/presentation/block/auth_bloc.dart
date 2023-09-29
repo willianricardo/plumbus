@@ -10,9 +10,9 @@ class AuthBloc extends Cubit<AuthState> {
     final repository = DependencyInjector.get<ISessionRepository>();
     var result = await repository.getLoggedUser();
 
-    result.when((r) {
-      emit(AuthenticatedState(r));
-    }, (l) {
+    result.when((usuario) {
+      emit(AuthenticatedState(usuario));
+    }, (_) {
       emit(const UnauthenticatedState());
     });
   }
