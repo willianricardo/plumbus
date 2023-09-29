@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:plumbus/app/domain/entities/usuario_entity.dart';
+import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/app/presentation/block/login_bloc.dart';
 import 'package:plumbus/core/theme/app_colors.dart';
 import 'package:plumbus/core/theme/app_images.dart';
@@ -31,21 +33,11 @@ class LoginView extends StatefulWidget {
   State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
-  Future<void> _login() async {
-    context.read<LoginBloc>().onLoginPressed(
-          context: context,
-          user: 'MM',
-          password: 'MM',
-          company: 1,
-        );
-  }
+class InitialStateWidget extends StatelessWidget {
+  const InitialStateWidget({super.key});
 
-  Future<void> _tryAgain() async {
-    context.read<LoginBloc>().onLoginReset();
-  }
-
-  _buildInitialState() {
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,7 +56,13 @@ class _LoginViewState extends State<LoginView> {
               ),
               elevation: 1,
             ),
-            onPressed: _login,
+            onPressed: () {
+              context.read<LoginBloc>().onLoginPressed(
+                    user: 'MM',
+                    password: 'MM',
+                    company: 1,
+                  );
+            },
             child: Text(
               AppTranslations.translate('login'),
               style: const TextStyle(
@@ -76,21 +74,48 @@ class _LoginViewState extends State<LoginView> {
       ],
     );
   }
+}
 
-  _buildLoadingState() {
+class LoadingStateWidget extends StatelessWidget {
+  const LoadingStateWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return const Center(
       child: CircularProgressIndicator(),
     );
   }
+}
 
-  _buildFailureState(message) {
+class SuccessStateWidget extends StatelessWidget {
+  final UsuarioEntity usuario;
+
+  const SuccessStateWidget({super.key, required this.usuario});
+
+  @override
+  Widget build(BuildContext context) {
+    context.read<AuthBloc>().onLoggedIn(usuario: usuario);
+    return const SizedBox.shrink();
+  }
+}
+
+class FailureStateWidget extends StatelessWidget {
+  final String message;
+
+  const FailureStateWidget({
+    super.key,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         children: [
           Text(message),
           TextButton(
             onPressed: () {
-              _tryAgain();
+              context.read<LoginBloc>().onLoginReset();
             },
             child: Text(
               AppTranslations.translate('try_again'),
@@ -100,11 +125,9 @@ class _LoginViewState extends State<LoginView> {
       ),
     );
   }
+}
 
-  _buildSuccessState() {
-    return Container();
-  }
-
+class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -143,11 +166,12 @@ class _LoginViewState extends State<LoginView> {
                     child: BlocBuilder<LoginBloc, LoginState>(
                       builder: (context, state) {
                         return switch (state) {
-                          InitialState() => _buildInitialState(),
-                          LoadingState() => _buildLoadingState(),
-                          SuccessState() => _buildSuccessState(),
+                          InitialState() => const InitialStateWidget(),
+                          LoadingState() => const LoadingStateWidget(),
+                          SuccessState(usuario: final usuario) =>
+                            SuccessStateWidget(usuario: usuario),
                           FailureState(error: final error) =>
-                            _buildFailureState(error.message),
+                            FailureStateWidget(message: error.message),
                         };
                       },
                     ),

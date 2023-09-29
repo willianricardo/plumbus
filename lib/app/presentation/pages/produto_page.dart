@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:plumbus/app/domain/entities/produto_entity.dart';
 import 'package:plumbus/app/presentation/block/auth_bloc.dart';
 import 'package:plumbus/app/presentation/block/produto_bloc.dart';
 import 'package:plumbus/app/presentation/components/produto_item.dart';
@@ -29,37 +30,43 @@ class ProdutoView extends StatefulWidget {
   State<ProdutoView> createState() => _ProdutoViewState();
 }
 
-class _ProdutoViewState extends State<ProdutoView> {
-  _logout() async {
-    context.read<AuthBloc>().onLoggedOut();
-  }
+class InitialStateWidget extends StatelessWidget {
+  const InitialStateWidget({super.key});
 
-  _onSearch() async {
-    context.read<ProdutoBloc>().onSearch();
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.shrink();
   }
+}
 
-  Future<void> _tryAgain() async {
-    context.read<ProdutoBloc>().onSearch();
-  }
+class LoadingStateWidget extends StatelessWidget {
+  const LoadingStateWidget({super.key});
 
-  _buildInitialState() {
-    return Container();
-  }
-
-  _buildLoadingState() {
+  @override
+  Widget build(BuildContext context) {
     return const Center(
       child: CircularProgressIndicator(),
     );
   }
+}
 
-  _buildFailureState(message) {
+class FailureStateWidget extends StatelessWidget {
+  final String message;
+
+  const FailureStateWidget({
+    super.key,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         children: [
           Text(message),
           TextButton(
             onPressed: () {
-              _tryAgain();
+              context.read<ProdutoBloc>().onSearch();
             },
             child: Text(
               AppTranslations.translate('try_again'),
@@ -69,8 +76,18 @@ class _ProdutoViewState extends State<ProdutoView> {
       ),
     );
   }
+}
 
-  _buildSuccessState(produtos) {
+class SuccessStateWidget extends StatelessWidget {
+  final List<ProdutoEntity> produtos;
+
+  const SuccessStateWidget({
+    super.key,
+    required this.produtos,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: produtos.length,
       itemBuilder: (context, index) {
@@ -78,6 +95,16 @@ class _ProdutoViewState extends State<ProdutoView> {
         return ProdutoItem(produto: produtos[index]);
       },
     );
+  }
+}
+
+class _ProdutoViewState extends State<ProdutoView> {
+  _logout() async {
+    context.read<AuthBloc>().onLoggedOut();
+  }
+
+  _onSearch() async {
+    context.read<ProdutoBloc>().onSearch();
   }
 
   @override
@@ -100,12 +127,12 @@ class _ProdutoViewState extends State<ProdutoView> {
         child: BlocBuilder<ProdutoBloc, ProdutoState>(
           builder: (context, state) {
             return switch (state) {
-              InitialState() => _buildInitialState(),
-              LoadingState() => _buildLoadingState(),
+              InitialState() => const InitialStateWidget(),
+              LoadingState() => const LoadingStateWidget(),
               SuccessState(produtos: final produtos) =>
-                _buildSuccessState(produtos),
+                SuccessStateWidget(produtos: produtos),
               FailureState(error: final error) =>
-                _buildFailureState(error.message),
+                FailureStateWidget(message: error.message),
             };
           },
         ),
